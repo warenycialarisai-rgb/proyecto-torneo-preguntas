@@ -119,7 +119,7 @@ CREATE TABLE Inventario_Aventurero (
 -- transaccion con ROLLBACK y vista en UN SOLO .sql para la entrega final.
 
 - =============================================================================
--- DATOS SEMILLA (DML) - 6 AVENTUREROS, 8 MISIONES Y 10 EQUIPAMIENTOS
+-- DATOS SEMILLA (DML) 
 -- =============================================================================
 
 -- 1. CARGA DE 6 AVENTUREROS ---------------------------------------------------
@@ -154,3 +154,38 @@ INSERT INTO Equipamiento (nombre, tipo, bonus_ataque, bonus_defensa, costo_oro) 
 ('Amuleto de Vitalidad', 'accesorio', 2, 10, 160.00),
 ('Dagas Gemelas Sombras', 'arma', 14, 4, 180.00),
 ('Botas de Sigilo', 'accesorio', 4, 6, 130.00);
+
+-- 4. MOVIMIENTOS FINANCIEROS EN TESORO -----------
+INSERT INTO Tesoro (tipo, monto, concepto, id_mision) VALUES
+('ingreso_mision', 300.00, 'Recompensa por limpiar cueva de trasgos', 1),
+('ingreso_mision', 600.00, 'Pago por rescate en minas abandonadas', 4),
+('ingreso_mision', 150.00, 'Entrega de hierbas lunares al gremio', 6),
+('egreso_equipo', 150.00, 'Compra de Espada Larga de Acero', NULL),
+('egreso_equipo', 350.00, 'Adquisicion de Baculo de Fuego', NULL),
+('egreso_salario', 120.00, 'Pago de jornada a Kaelen', NULL),
+('egreso_salario', 250.00, 'Pago y compensacion medica a Valeria', NULL);
+
+-- 5. ASIGNACION DE MISIONES A AVENTUREROS -------------------------------------
+INSERT INTO Asignacion_Mision (id_aventurero, id_mision, resultado, xp_ganada) VALUES
+(1, 1, 'exitoso', 350),
+(3, 1, 'exitoso', 350),
+(2, 2, NULL, 0),
+(6, 5, NULL, 0),
+(4, 7, 'herido', 200),
+(5, 4, 'exitoso', 500),
+(3, 6, 'exitoso', 150);
+
+-- 6. INVENTARIO DE LOS AVENTUREROS --------------------------------------------
+INSERT INTO Inventario_Aventurero (id_aventurero, id_equipamiento, equipado, cantidad) VALUES
+(1, 1, 1, 1),
+(1, 5, 1, 1),
+(2, 2, 1, 1),
+(2, 6, 1, 1),
+(3, 4, 1, 1),
+(3, 3, 0, 2),
+(4, 7, 1, 1),
+(4, 8, 1, 1),
+(5, 2, 0, 1),
+(6, 9, 1, 1),
+(6, 10, 1, 1);
+

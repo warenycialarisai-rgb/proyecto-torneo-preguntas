@@ -118,7 +118,7 @@ CREATE TABLE Inventario_Aventurero (
 -- Fin del modulo DDL. El equipo integrara datos semilla, 10 consultas,
 -- transaccion con ROLLBACK y vista en UN SOLO .sql para la entrega final.
 
-- =============================================================================
+-- =============================================================================
 -- DATOS SEMILLA (DML) 
 -- =============================================================================
 

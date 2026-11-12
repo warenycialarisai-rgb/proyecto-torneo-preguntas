@@ -119,7 +119,7 @@ CREATE TABLE Inventario_Aventurero (
 -- transaccion con ROLLBACK y vista en UN SOLO .sql para la entrega final.
 
 -- =============================================================================
--- DATOS SEMILLA (DML) 
+-- DATOS SEMILLA (DML) /  Gabriela A. Rodriguez
 -- =============================================================================
 
 -- 1. CARGA DE 6 AVENTUREROS ---------------------------------------------------

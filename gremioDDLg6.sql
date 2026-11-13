@@ -194,57 +194,57 @@ INSERT INTO Inventario_Aventurero (id_aventurero, id_equipamiento, equipado, can
 -- =============================================================================
 
 -- 1. Subconsulta escalar en WHERE: aventureros que cobran más que el salario promedio.
--- SELECT nombre, clase, salario_diario
--- FROM Aventurero
--- WHERE salario_diario > (SELECT AVG(salario_diario) FROM Aventurero);
+SELECT nombre, clase, salario_diario
+FROM Aventurero
+WHERE salario_diario > (SELECT AVG(salario_diario) FROM Aventurero);
 
 -- Devuelve Lyra (180.50), Valeria (250.00) y Sylvanas (155.00).
 
 -- 2. Subconsulta con IN: aventureros que completaron al menos una misión con éxito.
--- SELECT id, nombre, nivel
--- FROM Aventurero
--- WHERE id IN (
---   SELECT id_aventurero
---    FROM Asignacion_Mision
---    WHERE resultado = 'exitoso'
--- );
+SELECT id, nombre, nivel
+FROM Aventurero
+WHERE id IN (
+   SELECT id_aventurero
+   FROM Asignacion_Mision
+   WHERE resultado = 'exitoso'
+);
 
 -- Devuelve Kaelen, Thorne y Eldrin.
 
 -- 3. Subconsulta con NOT EXISTS: aventureros que nunca tuvieron una misión asignada.
--- SELECT a.id, a.nombre, a.clase
--- FROM Aventurero a
--- WHERE NOT EXISTS (
---    SELECT 1
---    FROM Asignacion_Mision am
---    WHERE am.id_aventurero = a.id
--- );
+SELECT a.id, a.nombre, a.clase
+FROM Aventurero a
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM Asignacion_Mision am
+    WHERE am.id_aventurero = a.id
+);
 
 -- En tus datos semilla todos tienen al menos una asignación, así que devuelve vacío. 
 -- Es correcto, y sirve para probar la consulta después de insertar un aventurero nuevo.
 
 -- 4. Subconsulta correlacionada: equipos cuyo costo supera el promedio de su propio tipo.
--- SELECT e.nombre, e.tipo, e.costo_oro
--- FROM Equipamiento e
--- WHERE e.costo_oro > (
---    SELECT AVG(e2.costo_oro)
---    FROM Equipamiento e2
---    WHERE e2.tipo = e.tipo
--- );
+SELECT e.nombre, e.tipo, e.costo_oro
+FROM Equipamiento e
+WHERE e.costo_oro > (
+    SELECT AVG(e2.costo_oro)
+    FROM Equipamiento e2
+    WHERE e2.tipo = e.tipo
+);
 
 -- Devuelve Tunica Arcana (armadura, 220), Arco Largo Elfico (arma, 240), Baculo de Fuego (arma, 350) y Amuleto de Vitalidad (accesorio, 160).
 
--- 5. Subconsulta en FROM (tabla derivada): total de oro invertido en equipo por aventurero
--- SELECT a.nombre, inv.total_invertido
--- FROM Aventurero a
--- JOIN (
---    SELECT ia.id_aventurero,
---           SUM(e.costo_oro * ia.cantidad) AS total_invertido
---    FROM Inventario_Aventurero ia
---    JOIN Equipamiento e ON e.id = ia.id_equipamiento
---    GROUP BY ia.id_aventurero
--- ) inv ON inv.id_aventurero = a.id
--- ORDER BY inv.total_invertido DESC;
+-- 5. Subconsulta en FROM (tabla derivada): total de oro invertido en equipo por aventurero.
+SELECT a.nombre, inv.total_invertido
+FROM Aventurero a
+JOIN (
+    SELECT ia.id_aventurero,
+           SUM(e.costo_oro * ia.cantidad) AS total_invertido
+    FROM Inventario_Aventurero ia
+    JOIN Equipamiento e ON e.id = ia.id_equipamiento
+    GROUP BY ia.id_aventurero
+) inv ON inv.id_aventurero = a.id
+ORDER BY inv.total_invertido DESC;
 
 -- Devuelve: Lyra 570, Kaelen 340, Thorne 460 (el anillo cuenta ×2), Valeria 335, Sylvanas 310, Eldrin 220.
 -- Con el ORDER BY queda: Lyra 570, Thorne 460, Kaelen 340, Valeria 335, Sylvanas 310, Eldrin 220.

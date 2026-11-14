@@ -1,3 +1,4 @@
+
 -- INFORMATICA II - GRUPO 6 - GUILD MASTER RPG
 -- FASE DDL - SQLite / José Vélez
 -- Soporte con script ChatGPT terra/alto 6.1
@@ -189,6 +190,38 @@ INSERT INTO Inventario_Aventurero (id_aventurero, id_equipamiento, equipado, can
 (6, 9, 1, 1),
 (6, 10, 1, 1);
 
+-- ============================================================
+-- VISTA SQL - RESUMEN ECONOMICO DEL GREMIO
+-- ============================================================
+
+CREATE VIEW vista_resumen_gremio AS
+SELECT
+    COALESCE(SUM(
+        CASE WHEN tipo = 'ingreso_mision'
+        THEN monto ELSE 0 END
+    ), 0) AS ingresos_misiones,
+
+    COALESCE(SUM(
+        CASE WHEN tipo = 'egreso_salario'
+        THEN monto ELSE 0 END
+    ), 0) AS gastos_salarios,
+
+    COALESCE(SUM(
+        CASE WHEN tipo = 'egreso_equipo'
+        THEN monto ELSE 0 END
+    ), 0) AS gastos_equipamiento,
+
+    COALESCE(SUM(
+        CASE
+            WHEN tipo = 'ingreso_mision' THEN monto
+            WHEN tipo IN ('egreso_salario', 'egreso_equipo')
+                THEN -monto
+            ELSE 0
+        END
+    ), 0) AS saldo_actual
+
+FROM Tesoro;
+
 -- =============================================================================
 -- SUBCONSULTAS /  Cristian Acevedo
 -- =============================================================================
@@ -220,7 +253,7 @@ WHERE NOT EXISTS (
     WHERE am.id_aventurero = a.id
 );
 
--- En tus datos semilla todos tienen al menos una asignación, así que devuelve vacío. 
+-- En tus datos semilla todos tienen al menos una asignación, así que devuelve vacío.
 -- Es correcto, y sirve para probar la consulta después de insertar un aventurero nuevo.
 
 -- 4. Subconsulta correlacionada: equipos cuyo costo supera el promedio de su propio tipo.
@@ -252,7 +285,7 @@ ORDER BY inv.total_invertido DESC;
 -- ============================================================
 -- GUILD MASTER RPG - CONSULTAS SQL CON JOIN / Maria Fernanda Almiron R.
 -- Proyecto B: Gestión de un gremio de aventureros
--- Motor previsto: MySQL / MariaDB
+-- Motor utilizado: SQLite
 --
 -- IMPORTANTE:
 -- Este archivo contiene las 10 consultas solicitadas para el proyecto.
@@ -273,13 +306,16 @@ ORDER BY inv.total_invertido DESC;
 
 
 -- 1. RENTABILIDAD DEL GREMIO
--- Calcula el total de oro ingresado por misiones y el total gastado
--- en salarios y equipamiento. Agrupa los movimientos por tipo.
+-- Consulta los ingresos, egresos y saldo actual.
+-- Utiliza la vista SQL del resumen economico.
 SELECT
-    tipo,
-    SUM(monto) AS total_oro
-FROM tesoro
-GROUP BY tipo;
+    ingresos_misiones,
+    gastos_salarios,
+    gastos_equipamiento,
+    ingresos_misiones - gastos_salarios
+        AS resultado_antes_de_equipamiento,
+    saldo_actual
+FROM vista_resumen_gremio;
 
 
 -- 2. TASA DE ÉXITO POR CLASE DE AVENTURERO
@@ -450,3 +486,39 @@ ORDER BY bonus_total_ataque DESC, bonus_total_defensa DESC;
 -- ============================================================
 -- FIN DE LAS CONSULTAS
 -- ============================================================
+
+-- ============================================================
+-- TRANSACCION CON ROLLBACK - PRUEBA DE COMPRA
+-- ============================================================
+
+-- Ejemplo: Eldrin compra unas Botas de Sigilo.
+-- La compra afecta al tesoro y al inventario.
+-- La operacion se cancela para demostrar ROLLBACK.
+-- Los cambios no deben permanecer en la base.
+
+BEGIN TRANSACTION;
+
+-- Registrar el gasto, si existe saldo suficiente.
+INSERT INTO Tesoro (tipo, monto, concepto, id_mision)
+SELECT
+    'egreso_equipo',
+    costo_oro,
+    'Compra de prueba: Botas de Sigilo',
+    NULL
+FROM Equipamiento
+WHERE id = 10
+AND costo_oro <= (
+    SELECT saldo_actual
+    FROM vista_resumen_gremio
+);
+
+-- Agregar el equipo solo si se registro el gasto.
+INSERT INTO Inventario_Aventurero
+    (id_aventurero, id_equipamiento, equipado, cantidad)
+SELECT 5, 10, 0, 1
+WHERE changes() = 1;
+
+-- Cancelar la compra y revertir ambos cambios.
+ROLLBACK;
+
+-- FIN DE LA PRUEBA DE TRANSACCION
